@@ -8,7 +8,7 @@ const handler = (ctx) => (ctx.body = { params: ctx.params, query: ctx.query });
 posts.get("/", postsCtrl.list);
 posts.post("/", postsCtrl.write);
 posts.get("/:id", postsCtrl.checkObjectId, postsCtrl.read);
-posts.patch("/:id", postsCtrl.checkObjectId, handler);
-posts.delete("/:id", postsCtrl.checkObjectId, handler);
+posts.patch("/:id", postsCtrl.checkObjectId, postsCtrl.update);
+posts.delete("/:id", postsCtrl.checkObjectId, postsCtrl.delete);
 
 module.exports = posts;

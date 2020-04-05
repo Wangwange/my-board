@@ -89,4 +89,12 @@ exports.logout = async (ctx) => {
 
 // 로그인 체크 - () => (id, username, authority)
 // POST /api/auth/register
-exports.check = async (ctx) => {};
+// jwtMiddleware를 거쳐 ctx에 탑재된 사용자 정보 체크
+exports.check = async (ctx) => {
+  const { user } = ctx.state;
+  if (!user) {
+    ctx.status = 401;
+    return;
+  }
+  ctx.body = user;
+};

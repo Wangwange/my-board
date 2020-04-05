@@ -2,7 +2,6 @@ const Router = require("koa-router");
 const {
   list,
   write,
-  writeWithoutAuth,
   read,
   update,
   remove,
@@ -14,7 +13,7 @@ const posts = new Router();
 const post = new Router();
 
 posts.get("/", list);
-posts.post("/", write, writeWithoutAuth);
+posts.post("/", write);
 
 post.get("/", getPostById, read);
 post.patch("/", getPostById, checkOwnPost, update);

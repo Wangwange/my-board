@@ -27,7 +27,7 @@ UserSchema.methods.checkPassword = async function (password) {
   return correct;
 };
 
-UserSchema.methods.generateToken = async function () {
+UserSchema.methods.generateToken = function () {
   const token = jwt.sign(
     {
       _id: this.id,

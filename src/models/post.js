@@ -21,6 +21,9 @@ const PostSchema = new mongoose.Schema({
     _id: mongoose.Types.ObjectId,
     username: String,
   },
+  password: {
+    type: String,
+  },
 });
 
 const Post = mongoose.model("Post", PostSchema);

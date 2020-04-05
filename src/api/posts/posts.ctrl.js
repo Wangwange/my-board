@@ -1,4 +1,5 @@
 const { Types } = require("mongoose");
+const Joi = require("joi");
 const Post = require("../../models/post");
 
 // 게시물 ID가 필요한 요청에 한해 ID 검증
@@ -15,6 +16,18 @@ exports.checkObjectId = (ctx, next) => {
 // POST /api/posts
 exports.write = async (ctx) => {
   const { title, body, tags } = ctx.request.body;
+  const Schema = Joi.object().keys({
+    title: Joi.string().required(),
+    body: Joi.string().required(),
+    tags: Joi.array().items(Joi.string()).required(),
+  });
+
+  const valid = Joi.validate(ctx.request.body, Schema);
+  if (valid.error) {
+    ctx.status = 400;
+    return;
+  }
+
   try {
     const post = new Post({
       title,
@@ -24,11 +37,6 @@ exports.write = async (ctx) => {
     await post.save();
     ctx.body = post;
   } catch (e) {
-    console.log(e);
-    if (e.name === "ValidationError") {
-      ctx.status = 400; //필수 항목이 빠진 요청이면 Bad Request
-      return;
-    }
     ctx.status = 500;
     return;
   }
@@ -67,6 +75,18 @@ exports.list = async (ctx) => {
 // PATCH /api/posts/:id
 exports.update = async (ctx) => {
   const { id } = ctx.params;
+  const Schema = Joi.object().keys({
+    title: Joi.string(),
+    body: Joi.string(),
+    tags: Joi.array().items(Joi.string()),
+  });
+
+  const valid = Joi.validate(ctx.request.body, Schema);
+  if (valid.error) {
+    ctx.status = 400;
+    return;
+  }
+
   try {
     const post = await Post.findByIdAndUpdate(id, ctx.request.body, {
       new: true,

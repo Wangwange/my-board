@@ -18,8 +18,13 @@ const PostSchema = new mongoose.Schema({
     default: Date.now,
   },
   author: {
-    _id: mongoose.Types.ObjectId,
-    username: String,
+    _id: {
+      type: mongoose.Types.ObjectId,
+    },
+    username: {
+      type: String,
+      required: true,
+    },
   },
   password: {
     type: String,

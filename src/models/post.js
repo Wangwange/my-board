@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const PostSchema = new mongoose.Schema({
   title: {
@@ -26,10 +27,15 @@ const PostSchema = new mongoose.Schema({
       required: true,
     },
   },
-  password: {
+  hashedPassword: {
     type: String,
   },
 });
+
+PostSchema.methods.setPassword = async function (password) {
+  const hash = await bcrypt.hash(password, 10);
+  this.hashedPassword = hash;
+};
 
 const Post = mongoose.model("Post", PostSchema);
 

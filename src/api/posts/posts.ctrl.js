@@ -1,5 +1,6 @@
 const { Types } = require("mongoose");
 const Joi = require("joi");
+const bcrypt = require("bcrypt");
 const Post = require("../../models/post");
 
 // 포스트 ID가 필요한 요청에 한해 ID 검증
@@ -43,8 +44,12 @@ exports.checkOwnPost = (ctx, next) => {
     return next();
   }
 
-  // 비회원이 작성한 포스트라면 요쳥에 담긴 비밀번호와 포스트 비밀번호 비교
-  if (post.password && postPassword && postPassword === post.password) {
+  // 비회원이 작성한 포스트라면 요청에 담긴 비밀번호와 포스트 비밀번호 비교
+  if (
+    post.hashedPassword &&
+    postPassword &&
+    bcrypt.compareSync(postPassword, post.hashedPassword)
+  ) {
     return next();
   }
 
@@ -80,13 +85,15 @@ exports.write = async (ctx) => {
       title,
       body,
       tags,
-      ...(withoutAuth ? { password } : {}),
       author: {
         ...(withoutAuth
           ? { username }
           : { _id: user._id, username: user.username }),
       },
     });
+    if (withoutAuth) {
+      await post.setPassword(password);
+    }
     await post.save();
     ctx.body = post;
     return;

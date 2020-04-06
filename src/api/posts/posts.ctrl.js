@@ -6,6 +6,7 @@ const Post = require("../../models/post");
 // 포스트 ID가 필요한 요청에 한해 ID 검증
 // 정상적인 포스트 ID면 해당 포스트를 ctx.state.post에 탑재
 exports.getPostById = async (ctx, next) => {
+  // 정상적인 ObjectID인지 확인
   const { id: postId } = ctx.params;
   if (!Types.ObjectId.isValid(postId)) {
     ctx.status = 400;
@@ -13,6 +14,7 @@ exports.getPostById = async (ctx, next) => {
   }
 
   try {
+    // 요청된 ID에 해당하는 포스트가 있으면 탑재
     const post = await Post.findById(postId).exec();
     if (!post) {
       ctx.status = 404;
@@ -31,6 +33,7 @@ exports.checkOwnPost = (ctx, next) => {
   const { user, post } = ctx.state;
   const { password: postPassword } = ctx.request.body;
 
+  // ObjectID는 문자열로 변환한 뒤 비교
   const userId = user && user._id;
   const authorId = post.author._id && post.author._id.toString();
 
@@ -73,6 +76,7 @@ exports.write = async (ctx) => {
       : {}),
   });
 
+  // 검증 결과
   const valid = Joi.validate(ctx.request.body, Schema);
   if (valid.error) {
     ctx.status = 400;
@@ -80,7 +84,7 @@ exports.write = async (ctx) => {
   }
 
   try {
-    // 회원이라면 작성자 ID를, 비회원이라면 포스트 비밀번호를 저장
+    // 회원이라면 작성자 ID 설정
     const post = new Post({
       title,
       body,
@@ -91,6 +95,7 @@ exports.write = async (ctx) => {
           : { _id: user._id, username: user.username }),
       },
     });
+    // 비회원 포스트라면 비밀번호 설정
     if (withoutAuth) {
       await post.setPassword(password);
     }
@@ -105,13 +110,32 @@ exports.write = async (ctx) => {
 
 // 개별 포스트 조회 - GET /api/posts/:id
 exports.read = async (ctx) => {
+  // 미들웨어를 걸쳐 탑재된 포스트를 그대로 반환
   ctx.body = ctx.state.post;
 };
 
 // 포스트 목록 조회 - GET /api/posts
 exports.list = async (ctx) => {
+  const { username, tag, page } = ctx.query;
+  const parsedPage = page ? parseInt(page) : 1;
+  const postPerPage = 15;
+  if (parsedPage < 1) {
+    ctx.status = 400;
+    return;
+  }
+
+  // 포스트 목록 쿼리
+  const query = {
+    ...(username ? { "author.username": username } : {}),
+    ...(tag ? { tags: tag } : {}),
+  };
+
   try {
-    const posts = await Post.find().exec();
+    const posts = await Post.find(query)
+      .limit(postPerPage)
+      .skip((parsedPage - 1) * postPerPage)
+      .sort({ publishedDate: -1 })
+      .exec();
     ctx.body = posts;
   } catch (e) {
     ctx.status = 500;
@@ -129,6 +153,7 @@ exports.update = async (ctx) => {
     tags: Joi.array().items(Joi.string()),
   });
 
+  // 검증 결과
   const valid = Joi.validate(withoutPassword, Schema);
   if (valid.error) {
     ctx.status = 400;
@@ -136,6 +161,7 @@ exports.update = async (ctx) => {
   }
 
   try {
+    // 포스트를 업데이트 하고 업데이트 된 포스트를 반환
     const post = await Post.findByIdAndUpdate(
       ctx.state.post.id,
       withoutPassword,
@@ -144,6 +170,7 @@ exports.update = async (ctx) => {
       }
     ).exec();
 
+    // 존재하지 않는  포스트라면 실패
     if (!post) {
       ctx.status = 404;
       return;

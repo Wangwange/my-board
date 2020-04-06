@@ -66,6 +66,7 @@ exports.write = async (ctx) => {
   const withoutAuth = !user;
   const { title, body, tags, username, password } = ctx.request.body;
 
+  // title, body, tags는 필수
   // 비회원 포스트라면 작성자명과 포스트 비밀번호가 있는지 추가로 검증
   const Schema = Joi.object().keys({
     title: Joi.string().required(),
@@ -84,7 +85,7 @@ exports.write = async (ctx) => {
   }
 
   try {
-    // 회원이라면 작성자 ID 설정
+    // 회원 포스트라면 작성자 ID 설정
     const post = new Post({
       title,
       body,
@@ -119,6 +120,7 @@ exports.list = async (ctx) => {
   const { username, tag, page } = ctx.query;
   const parsedPage = page ? parseInt(page) : 1;
   const postPerPage = 15;
+  // 페이지 번호가 1 미만이면 실패
   if (parsedPage < 1) {
     ctx.status = 400;
     return;
@@ -161,7 +163,7 @@ exports.update = async (ctx) => {
   }
 
   try {
-    // 포스트를 업데이트 하고 업데이트 된 포스트를 반환
+    // 포스트를 갱신하고 갱신된 포스트를 반환
     const post = await Post.findByIdAndUpdate(
       ctx.state.post.id,
       withoutPassword,
@@ -170,7 +172,7 @@ exports.update = async (ctx) => {
       }
     ).exec();
 
-    // 존재하지 않는  포스트라면 실패
+    // 존재하지 않는 포스트라면 실패
     if (!post) {
       ctx.status = 404;
       return;

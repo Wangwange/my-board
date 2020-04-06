@@ -1,8 +1,7 @@
 const Joi = require("joi");
 const User = require("../../models/user");
 
-// 회원 등록 - (username, password) => (id, username, authority)
-// POST /api/auth/register
+// 회원 등록 - POST /api/auth/register
 exports.register = async (ctx) => {
   //검증용 스키마
   const Schema = Joi.object().keys({
@@ -51,8 +50,7 @@ exports.register = async (ctx) => {
   }
 };
 
-// 로그인 - (username, password) => (id, username, authority)
-// POST /api/auth/register
+// 로그인 - POST /api/auth/register
 exports.login = async (ctx) => {
   const { username, password } = ctx.request.body;
 
@@ -90,16 +88,14 @@ exports.login = async (ctx) => {
   }
 };
 
-// 로그아웃 - () => void
-// POST /api/auth/logout
+// 로그아웃 - POST /api/auth/logout
 exports.logout = async (ctx) => {
   // 토큰 소멸
   ctx.cookies.set("access_token");
   ctx.status = 204;
 };
 
-// 로그인 체크 - () => (id, username, authority)
-// POST /api/auth/register
+// 로그인 체크 - POST /api/auth/register
 exports.check = async (ctx) => {
   // jwtMiddleware를 거쳐 ctx에 탑재된 사용자 정보 체크
   const { user } = ctx.state;

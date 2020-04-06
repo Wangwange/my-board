@@ -5,8 +5,8 @@ const User = require("../../models/user");
 exports.register = async (ctx) => {
   //검증용 스키마
   const Schema = Joi.object().keys({
-    username: Joi.string().min(2).max(10).alphanum().required(),
-    password: Joi.string().min(4).max(10).required(),
+    username: Joi.string().min(2).max(15).alphanum().required(),
+    password: Joi.string().min(4).max(15).required(),
     adminKey: Joi.string(),
   });
 

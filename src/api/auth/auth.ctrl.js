@@ -1,13 +1,14 @@
 const Joi = require("joi");
 const User = require("../../models/user");
+const Validation = require("../../lib/validation");
 
 // 회원 등록 - POST /api/auth/register
 exports.register = async (ctx) => {
   //검증용 스키마
   const Schema = Joi.object().keys({
-    username: Joi.string().min(2).max(15).alphanum().required(),
-    password: Joi.string().min(4).max(15).required(),
-    adminKey: Joi.string(),
+    username: Validation.user.username.required(),
+    password: Validation.user.password.required(),
+    adminKey: Validation.user.adminKey,
   });
 
   // 검증 결과

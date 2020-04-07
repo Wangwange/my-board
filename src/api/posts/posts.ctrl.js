@@ -2,6 +2,8 @@ const { Types } = require("mongoose");
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const Post = require("../../models/post");
+const CONSTANTS = require("../../lib/constants");
+const Validation = require("../../lib/validation");
 
 // 포스트 ID가 필요한 요청에 한해 ID 검증
 // 정상적인 포스트 ID면 해당 포스트를 ctx.state.post에 탑재
@@ -69,11 +71,14 @@ exports.write = async (ctx) => {
   // title, body, tags는 필수
   // 비회원 포스트라면 작성자명과 포스트 비밀번호가 있는지 추가로 검증
   const Schema = Joi.object().keys({
-    title: Joi.string().required(),
-    body: Joi.string().required(),
-    tags: Joi.array().items(Joi.string()).required(),
+    title: Validation.post.title.required(),
+    body: Validation.post.body.required(),
+    tags: Validation.post.tags.required(),
     ...(withoutAuth
-      ? { username: Joi.string().required(), password: Joi.string().required() }
+      ? {
+          username: Validation.user.username.required(),
+          password: Validation.post.password.required(),
+        }
       : {}),
   });
 
@@ -119,7 +124,7 @@ exports.read = async (ctx) => {
 exports.list = async (ctx) => {
   const { username, tag, page } = ctx.query;
   const parsedPage = page ? parseInt(page) : 1;
-  const postPerPage = 15;
+  const postPerPage = CONSTANTS.postPerPage;
   // 페이지 번호가 1 미만이면 실패
   if (parsedPage < 1) {
     ctx.status = 400;
@@ -150,9 +155,9 @@ exports.update = async (ctx) => {
   // 추가적인 검증이 필요 없는 포스트 비밀번호를 분리
   const { password, ...withoutPassword } = ctx.request.body;
   const Schema = Joi.object().keys({
-    title: Joi.string(),
-    body: Joi.string(),
-    tags: Joi.array().items(Joi.string()),
+    title: Validation.post.title,
+    body: Validation.post.body,
+    tags: Validation.post.tags,
   });
 
   // 검증 결과

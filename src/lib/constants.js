@@ -1,5 +1,5 @@
 exports.maxLength = {
-  title: 30,
+  title: 100,
   tags: 7,
   username: 15,
   password: 15,

@@ -16,7 +16,7 @@ mongoose
   .connect(MONGO_URI, { useNewUrlParser: true, useFindAndModify: false })
   .then(() => {
     console.log("MongoDB connected");
-    createFakePosts();
+    // createFakePosts();
   })
   .catch((e) => console.error(e));
 

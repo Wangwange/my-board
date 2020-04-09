@@ -12,9 +12,28 @@ const defaultSanitizingOption = {
   allowedScheme: [],
 };
 const bodySanitizingOption = {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["h1", "h2"]),
-  allowedAttributes: sanitizeHtml.defaults.allowedAttributes,
-  allowedScheme: sanitizeHtml.defaults.allowedSchemes,
+  aallowedTags: [
+    "h3",
+    "h4",
+    "b",
+    "i",
+    "em",
+    "u",
+    "s",
+    "p",
+    "ul",
+    "ol",
+    "li",
+    "blockquote",
+    "a",
+    "img",
+  ],
+  allowedAttributes: {
+    a: ["href", "name", "target"],
+    img: ["src"],
+    li: ["class"],
+  },
+  allowedSchemes: ["data", "http"],
 };
 
 const sanitizeTitle = (title) => sanitizeHtml(title, defaultSanitizingOption);
@@ -84,6 +103,7 @@ exports.write = async (ctx) => {
   const { user } = ctx.state;
   const withoutAuth = !user;
   const { title, body, tags, username, password } = ctx.request.body;
+  console.log(sanitizeBody(body));
 
   // title, body, tags는 필수
   // 비회원 포스트라면 작성자명과 포스트 비밀번호가 있는지 추가로 검증

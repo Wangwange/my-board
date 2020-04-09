@@ -1,9 +1,26 @@
 const { Types } = require("mongoose");
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
+const sanitizeHtml = require("sanitize-html");
 const Post = require("../../models/post");
 const CONSTANTS = require("../../lib/constants");
 const Validation = require("../../lib/validation");
+
+const defaultSanitizingOption = {
+  allowedTags: [],
+  allowedAttributes: [],
+  allowedScheme: [],
+};
+const bodySanitizingOption = {
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["h1", "h2"]),
+  allowedAttributes: sanitizeHtml.defaults.allowedAttributes,
+  allowedScheme: sanitizeHtml.defaults.allowedSchemes,
+};
+
+const sanitizeTitle = (title) => sanitizeHtml(title, defaultSanitizingOption);
+const sanitizeBody = (body) => sanitizeHtml(body, bodySanitizingOption);
+const sanitizeTags = (tags) =>
+  tags.map((tag) => sanitizeHtml(tag, defaultSanitizingOption));
 
 // 포스트 ID가 필요한 요청에 한해 ID 검증
 // 정상적인 포스트 ID면 해당 포스트를 ctx.state.post에 탑재
@@ -92,9 +109,9 @@ exports.write = async (ctx) => {
   try {
     // 회원 포스트라면 작성자 ID 설정
     const post = new Post({
-      title,
-      body,
-      tags,
+      title: sanitizeTitle(title),
+      body: sanitizeBody(body),
+      tags: sanitizeTags(tags),
       author: {
         ...(withoutAuth
           ? { username }
@@ -124,7 +141,7 @@ exports.read = async (ctx) => {
 exports.list = async (ctx) => {
   const { username, tag, page } = ctx.query;
   const parsedPage = page ? parseInt(page) : 1;
-  const postPerPage = CONSTANTS.postPerPage;
+
   // 페이지 번호가 1 미만이면 실패
   if (parsedPage < 1) {
     ctx.status = 400;
@@ -138,12 +155,20 @@ exports.list = async (ctx) => {
   };
 
   try {
+    const postPerPage = CONSTANTS.postPerPage;
+    const postCount = await Post.countDocuments().exec();
+    const lastPage = Math.ceil(postCount / postPerPage);
     const posts = await Post.find(query)
       .limit(postPerPage)
       .skip((parsedPage - 1) * postPerPage)
       .sort({ publishedDate: -1 })
+      .lean()
       .exec();
-    ctx.body = posts;
+    ctx.set("last-page", lastPage);
+    ctx.body = posts.map((post) => {
+      delete post.hashedPassword;
+      return post;
+    });
   } catch (e) {
     ctx.status = 500;
     return;
@@ -169,13 +194,15 @@ exports.update = async (ctx) => {
 
   try {
     // 포스트를 갱신하고 갱신된 포스트를 반환
-    const post = await Post.findByIdAndUpdate(
-      ctx.state.post.id,
-      withoutPassword,
-      {
-        new: true,
-      }
-    ).exec();
+    const { title, body, tags } = withoutPassword;
+    const nextPost = {
+      ...(title ? { title: sanitizeTitle(title) } : {}),
+      ...(body ? { body: sanitizeBody(body) } : {}),
+      ...(tags ? { tags: sanitizeTags(tags) } : {}),
+    };
+    const post = await Post.findByIdAndUpdate(ctx.state.post.id, nextPost, {
+      new: true,
+    }).exec();
 
     // 존재하지 않는 포스트라면 실패
     if (!post) {

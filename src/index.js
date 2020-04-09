@@ -4,6 +4,7 @@ const Router = require("koa-router");
 const bodyParser = require("koa-bodyparser");
 const mongoose = require("mongoose");
 const jwtMiddleware = require("./lib/jwtMiddleware");
+const createFakePosts = require("./lib/createFakePosts");
 
 const app = new Koa();
 const router = new Router();
@@ -13,7 +14,10 @@ const { PORT, MONGO_URI } = process.env;
 
 mongoose
   .connect(MONGO_URI, { useNewUrlParser: true, useFindAndModify: false })
-  .then(() => console.log("MongoDB connected"))
+  .then(() => {
+    console.log("MongoDB connected");
+    createFakePosts();
+  })
   .catch((e) => console.error(e));
 
 router.use("/api", api.routes());

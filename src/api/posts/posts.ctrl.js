@@ -176,7 +176,7 @@ exports.list = async (ctx) => {
 
   try {
     const postPerPage = CONSTANTS.postPerPage;
-    const postCount = await Post.countDocuments().exec();
+    const postCount = await Post.countDocuments(query).exec();
     const lastPage = Math.ceil(postCount / postPerPage);
     const posts = await Post.find(query)
       .limit(postPerPage)

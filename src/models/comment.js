@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const CommentSchema = new mongoose.Schema({
   rootPostId: {
@@ -19,10 +20,24 @@ const CommentSchema = new mongoose.Schema({
       type: mongoose.Types.ObjectId,
     },
   },
-  password: {
+  hashedPassword: {
     type: String,
   },
+  publishedDate: {
+    type: Date,
+    default: Date.now,
+  },
 });
+
+CommentSchema.methods.setPassword = async function (password) {
+  this.hashedPassword = await bcrypt.hash(password, 10);
+};
+
+CommentSchema.methods.serialize = function () {
+  const commentData = this.toJSON();
+  delete commentData.hashedPassword;
+  return commentData;
+};
 
 const Comment = mongoose.model("Comment", CommentSchema);
 

@@ -3,6 +3,7 @@ exports.maxLength = {
   tags: 7,
   username: 15,
   password: 15,
+  comment: 100,
 };
 
 exports.minLength = {

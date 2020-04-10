@@ -20,4 +20,10 @@ module.exports = {
       .min(CONSTANTS.minLength.password)
       .max(CONSTANTS.maxLength.password),
   },
+  comment: {
+    body: Joi.string().max(CONSTANTS.maxLength.comment),
+    password: Joi.string()
+      .min(CONSTANTS.minLength.password)
+      .max(CONSTANTS.maxLength.password),
+  },
 };

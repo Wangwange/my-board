@@ -53,12 +53,23 @@ exports.getPostById = async (ctx, next) => {
 
   try {
     // 요청된 ID에 해당하는 포스트가 있으면 탑재
-    const post = await Post.findById(postId).exec();
-    if (!post) {
+    const post = await Post.aggregate()
+      .match({ _id: Types.ObjectId(postId) })
+      .lookup({
+        from: "comments",
+        localField: "_id",
+        foreignField: "rootPostId",
+        as: "comments",
+      })
+      .project({ "comments.hashedPassword": 0 })
+      .exec();
+
+    if (!post || post.length === 0) {
       ctx.status = 404;
       return;
     }
-    ctx.state.post = post;
+
+    ctx.state.post = post[0];
     return next();
   } catch (e) {
     ctx.status = 500;
@@ -178,17 +189,23 @@ exports.list = async (ctx) => {
     const postPerPage = CONSTANTS.postPerPage;
     const postCount = await Post.countDocuments(query).exec();
     const lastPage = Math.ceil(postCount / postPerPage);
-    const posts = await Post.find(query)
-      .limit(postPerPage)
-      .skip((parsedPage - 1) * postPerPage)
+    const posts = await Post.aggregate()
       .sort({ publishedDate: -1 })
-      .lean()
+      .match({ ...(username ? { "author.username": username } : {}) })
+      .match({ ...(tag ? { tags: tag } : {}) })
+      .lookup({
+        from: "comments",
+        localField: "_id",
+        foreignField: "rootPostId",
+        as: "comments",
+      })
+      .addFields({ commentCount: { $size: "$comments" } })
+      .project({ hashedPassword: 0, body: 0, comments: 0 })
+      .skip((page - 1) * postPerPage)
+      .limit(postPerPage)
       .exec();
     ctx.set("last-page", lastPage);
-    ctx.body = posts.map((post) => {
-      delete post.hashedPassword;
-      return post;
-    });
+    ctx.body = posts;
   } catch (e) {
     ctx.status = 500;
     return;

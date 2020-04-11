@@ -42,24 +42,15 @@ exports.write = async (ctx) => {
   const withoutAuth = !ctx.state.user;
 
   const rootPostIdValid = mongoose.Types.ObjectId.isValid(rootPostId);
-  if (!rootPostIdValid) {
+  const rootCommentIdValid = mongoose.Types.ObjectId.isValid(rootCommentId);
+  if (!rootPostIdValid || (rootCommentId && !rootCommentIdValid)) {
     ctx.status = 400;
     return;
   }
 
   const rootPost = await Post.findById(rootPostId).exec();
-  if (!rootPost) {
-    ctx.status = 404;
-    return;
-  }
-
-  const rootCommentIdValid = mongoose.Types.ObjectId.isValid(rootCommentId);
-  if (rootCommentId && !rootCommentIdValid) {
-    ctx.status = 400;
-    return;
-  }
   const rootComment = await Comment.findById(rootCommentId).exec();
-  if (rootCommentId && !rootComment) {
+  if (!rootPost || (rootCommentId && !rootComment)) {
     ctx.status = 404;
     return;
   }

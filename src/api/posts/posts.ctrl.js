@@ -114,7 +114,6 @@ exports.write = async (ctx) => {
   const { user } = ctx.state;
   const withoutAuth = !user;
   const { title, body, tags, username, password } = ctx.request.body;
-  console.log(sanitizeBody(body));
 
   // title, body, tags는 필수
   // 비회원 포스트라면 작성자명과 포스트 비밀번호가 있는지 추가로 검증
@@ -237,7 +236,7 @@ exports.update = async (ctx) => {
       ...(body ? { body: sanitizeBody(body) } : {}),
       ...(tags ? { tags: sanitizeTags(tags) } : {}),
     };
-    const post = await Post.findByIdAndUpdate(ctx.state.post.id, nextPost, {
+    const post = await Post.findByIdAndUpdate(ctx.state.post._id, nextPost, {
       new: true,
     }).exec();
 
@@ -257,7 +256,7 @@ exports.update = async (ctx) => {
 // 포스트 삭제 - DELETE /api/posts/:id
 exports.remove = async (ctx) => {
   try {
-    await Post.findByIdAndRemove(ctx.state.post.id);
+    await Post.findByIdAndRemove(ctx.state.post._id);
     ctx.status = 204;
   } catch (e) {
     ctx.status = 500;

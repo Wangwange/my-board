@@ -4,7 +4,11 @@ const Router = require("koa-router");
 const bodyParser = require("koa-bodyparser");
 const mongoose = require("mongoose");
 const jwtMiddleware = require("./lib/jwtMiddleware");
-const createFakePosts = require("./lib/createFakePosts");
+const serve = require("koa-static");
+const send = require("koa-send");
+const path = require("path");
+
+// const createFakePosts = require("./lib/createFakePosts");
 
 const app = new Koa();
 const router = new Router();
@@ -25,5 +29,13 @@ router.use("/api", api.routes());
 app.use(bodyParser());
 app.use(jwtMiddleware);
 app.use(router.routes()).use(router.allowedMethods());
+
+const buildDirectory = path.resolve(__dirname, "../../front/build");
+app.use(serve(buildDirectory));
+app.use(async (ctx) => {
+  if (ctx.status === 404 && ctx.path.indexOf("/api") !== 0) {
+    await send(ctx, "index.html", { root: buildDirectory });
+  }
+});
 
 app.listen(PORT || 4000, () => console.log("Server started"));

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 const sanitizeHtml = require("sanitize-html");
+const bcrypt = require("bcrypt");
 const Comment = require("../../models/comment");
 const Post = require("../../models/post");
 const Validation = require("../../lib/validation");

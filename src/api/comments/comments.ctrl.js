@@ -91,3 +91,14 @@ exports.write = async (ctx) => {
     return;
   }
 };
+
+// 댓글 삭제 - DELETE /api/comments/:id
+exports.remove = async (ctx) => {
+  try {
+    await Comment.findByIdAndRemove(ctx.params.id);
+    ctx.status = 204;
+  } catch (e) {
+    ctx.status = 500;
+    return;
+  }
+};

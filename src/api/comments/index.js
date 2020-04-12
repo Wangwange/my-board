@@ -4,10 +4,6 @@ const commentsCtrl = require("./comments.ctrl");
 const comments = new Router();
 
 comments.post("/", commentsCtrl.write);
-comments.delete(
-  "/:id",
-  commentsCtrl.checkOwnComment,
-  (ctx) => (ctx.body = "delete comment")
-);
+comments.delete("/:id", commentsCtrl.checkOwnComment, commentsCtrl.remove);
 
 module.exports = comments;

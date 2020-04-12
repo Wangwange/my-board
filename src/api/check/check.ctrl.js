@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const Post = require("../../models/post");
+const Comment = require("../../models/comment");
 const Validation = require("../../lib/validation");
 
 exports.checkPostWrite = (ctx) => {
@@ -30,6 +31,30 @@ exports.checkPostAction = async (ctx) => {
     }
 
     const valid = await bcrypt.compare(password, post.hashedPassword);
+    if (!valid) {
+      ctx.status = 401;
+      return;
+    }
+
+    ctx.status = 200;
+  } catch (e) {
+    ctx.status = 500;
+    return;
+  }
+};
+
+exports.checkCommentAction = async (ctx) => {
+  const { id } = ctx.params;
+  const { password } = ctx.request.body;
+
+  try {
+    const comment = await Comment.findById(id).exec();
+    if (!comment) {
+      ctx.status = 404;
+      return;
+    }
+
+    const valid = await bcrypt.compare(password, comment.hashedPassword);
     if (!valid) {
       ctx.status = 401;
       return;

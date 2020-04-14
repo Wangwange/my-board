@@ -5,17 +5,17 @@
 리액트 입문서 '리액트를 다루는 기술'에 담겨 있는 블로그 제작 예제를 제 나름대로 재탄생시켜 보았습니다. 블로그 형식의 앱을 게시판 형식으로 바꾸고, 이것저것 넣으려고 했습니다만... 그렇게 많은 기능을 추가하진 못했습니다. 능력 부족을 실감했습니다. 별것 아닌 변화임에도 시간은 엄청나게 잡아먹은 만큼, 리액트와 한 걸음 더(?) 가까워진 느낌입니다.
 
 ## 활용
--bcrypt
--dotenv
--joi
--jsonwebtoken
--koa
--koa-bodyparser
--koa-router
--koa-send
--koa-static
--mongoose
--sanitize-html
+- bcrypt
+- dotenv
+- joi
+- jsonwebtoken
+- koa
+- koa-bodyparser
+- koa-router
+- koa-send
+- koa-static
+- mongoose
+- sanitize-html
 
 ## 달라진 점
 - 회원가입은 선택
